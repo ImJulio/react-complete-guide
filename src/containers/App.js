@@ -4,6 +4,9 @@ import classes from './App.css';
 // import Radium, {StyleRoot} from 'radium';
 import Persons from '../components/Persons/Persons';
 import Cockpit from '../components/Cockpit/Cockpit';
+import withClass from '../hoc/withClass';
+import Auxiliary from '../hoc/Auxiliary';
+import AuthContext from '../context/auth-context';
 
 class App extends Component {
   //create lifecycle 1
@@ -21,7 +24,9 @@ class App extends Component {
     ],
     otherState: 'some other value',
     showPersons: false,
-    showCockpit: true
+    showCockpit: true,
+    changeCounter: 0,
+    authenticated: false
   }
   //create lifecycle 2
   static getDerivedStateFromProps(props, state) {
@@ -33,17 +38,18 @@ class App extends Component {
   //   console.log('[App.js] componentWillMount');
   // }
 
-  //create lifecycle 4 aquí se pueden hacer las http requests
+  //IMPORTANT create lifecycle 4 aquí se pueden hacer las http requests
   componentDidMount() {
     console.log('[App.js] componentDidMount'); 
   }
   
+  //IMPORTANT for performance improvements
   //may cancel updating process (decide to continue or not)
   shouldComponentUpdate(nextProps, nextState) { //used for performance improvements
     console.log('[App.js] shouldComponentUpdate');
     return true;
   }
-
+  //IMPORTANT
   componentDidUpdate() { //fetching new data from a server (o sea otro http req?)
     console.log('[App.js] componentDidUpdate');
   }
@@ -73,12 +79,21 @@ class App extends Component {
     const persons = [...this.state.persons];
     persons[personIndex] = person; //actualizar el dom con el modelo editado
 
-    this.setState({ persons: persons });
-  }
+    this.setState((prevState, props) => {
+      return {
+        persons: persons, 
+        changeCounter: prevState.changeCounter + 1 
+      };
+    });
+  };
 
   togglePersonsHandler = () => {
     //const doesShow = this.state.showPersons;
     this.setState({showPersons: !this.state.showPersons})
+  }
+
+  loginHandler = () => {
+    this.setState({authenticated: true});
   }
 
   //create lifecycle 3
@@ -90,27 +105,34 @@ class App extends Component {
       persons = <Persons 
             persons={this.state.persons} 
             clicked={this.deletePersonHandler} 
-            changed={this.nameChangedHandler} />;
+            changed={this.nameChangedHandler}
+            isAuthenticated={this.state.authenticated}
+             />;
     }
     
     return (
-      <div className={classes.App}>
+      <Auxiliary classes={classes.App}>
         <button onClick={() => {
-          this.setState({showCockpit: false})
-          }}>Remove Cockpit</button>
-        {this.state.showCockpit ? <Cockpit
-          title={this.props.appTitle}
-          showPersons={this.state.showPersons}
-          personsLength={this.state.persons.length}
-          clicked={this.togglePersonsHandler} /> : null }
-        {persons}
-      </div>
+          this.setState({ showCockpit: false })
+        }}>Remove Cockpit</button>
+        <AuthContext.Provider value={{
+          authenticated: this.state.authenticated, 
+          login: this.loginHandler
+          }} >
+          {this.state.showCockpit ? <Cockpit
+            title={this.props.appTitle}
+            showPersons={this.state.showPersons}
+            personsLength={this.state.persons.length}
+            clicked={this.togglePersonsHandler} /> : null}
+          {persons}
+        </AuthContext.Provider>
+      </Auxiliary>
     );
     // return React.createElement('div', {className: 'App'}, React.createElement('h1', null, 'Does this works now?'));
   }
 }
 
-export default App;
+export default withClass(App, classes.App );
 //ESTE ES UN CLASS-BASED COMPONENT
 //es mejor usar el bind en lugar del arrow func
 

@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 
 import Person from './Person/Person';
 
-class Persons extends Component {
+class Persons extends PureComponent {
   // static getDerivedStateFromProps(props, state){
   //   console.log('[Persons.js] getDerivedStateFromProps')
   //   return state;
@@ -12,15 +12,19 @@ class Persons extends Component {
   //   console.log('[Persons.js] componentWillReceiveProps', props)
   // }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    console.log('[Persons.js] shouldComponentUpdate');
-    //cuando se hace un update al state por ref (a un array p.ej.) no funciona puesto que no identifica el cambio, se tiene que hacer con replacement
-    if (nextProps.persons !== this.props.persons){
-      return true;
-    } else {
-      return false;
-    }
-  }
+
+  //PureComponent sirve de shouldComponentUpdate y ya checa todas las props (persons, changed y clicked)
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   console.log('[Persons.js] shouldComponentUpdate');
+  //   //cuando se hace un update al state por ref (a un array p.ej.) no funciona puesto que no identifica el cambio, se tiene que hacer con replacement
+  //   if (nextProps.persons !== this.props.persons ||
+  //     nextProps.changed !== this.props.changed ||
+  //     nextProps.clicked !== this.props.clicked) {
+  //     return true;
+  //   } else {
+  //     return false;
+  //   }
+  // }
 
   //sirve para guardar por ejemplo el current coordinates del scroll
   getSnapshotBeforeUpdate(prevProps, prevState) {
